@@ -1,7 +1,7 @@
 //! SQLite persistence for normalized usage records.
 //! @author codex
 
-use std::path::Path;
+use std::{collections::HashSet, path::Path};
 
 use anyhow::Result;
 use rusqlite::{Connection, params};
@@ -19,6 +19,13 @@ pub struct UsageSummary {
     pub records: u64,
     pub usage: TokenUsage,
     pub cost_usd: f64,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct DailyToolSummary {
+    pub day: String,
+    pub tool: String,
+    pub total_tokens: u64,
 }
 
 impl UsageStore {
@@ -99,6 +106,35 @@ impl UsageStore {
         day_prefix: Option<&str>,
     ) -> Result<Vec<UsageSummary>> {
         self.summary_grouped("COALESCE(project_path, '(unknown)')", project, day_prefix)
+    }
+
+    pub fn daily_tool_totals(&self, days: &[String]) -> Result<Vec<DailyToolSummary>> {
+        if days.is_empty() {
+            return Ok(Vec::new());
+        }
+        let day_set = days.iter().map(String::as_str).collect::<HashSet<_>>();
+        let mut stmt = self.conn.prepare(
+            "SELECT substr(ts, 1, 10) AS day, tool, SUM(total_tokens)
+            FROM usage_records
+            WHERE ts IS NOT NULL
+            GROUP BY day, tool
+            ORDER BY day ASC, SUM(total_tokens) DESC",
+        )?;
+        let rows = stmt.query_map([], |row| {
+            Ok(DailyToolSummary {
+                day: row.get(0)?,
+                tool: row.get(1)?,
+                total_tokens: row.get::<_, Option<i64>>(2)?.unwrap_or(0) as u64,
+            })
+        })?;
+        let mut summaries = Vec::new();
+        for row in rows {
+            let summary = row?;
+            if day_set.contains(summary.day.as_str()) {
+                summaries.push(summary);
+            }
+        }
+        Ok(summaries)
     }
 
     fn summary_grouped(
@@ -269,6 +305,34 @@ mod tests {
         assert_eq!(summaries.len(), 1);
         assert_eq!(summaries[0].usage.input, 10);
         assert_eq!(summaries[0].usage.total(), 10);
+    }
+
+    #[test]
+    fn aggregates_daily_tool_totals_for_trend_chart() {
+        let dir = tempdir().unwrap();
+        let db = dir.path().join("wapc.db");
+        let store = UsageStore::open(&db).unwrap();
+        let mut codex = sample_record("codex-1", 30);
+        codex.tool = ToolKind::Codex;
+        codex.timestamp = Some("2026-05-25T09:00:00Z".parse().unwrap());
+        let mut claude = sample_record("claude-1", 20);
+        claude.tool = ToolKind::Claude;
+        claude.timestamp = Some("2026-05-25T10:00:00Z".parse().unwrap());
+        let mut old = sample_record("old", 99);
+        old.tool = ToolKind::Gemini;
+        old.timestamp = Some("2026-05-23T10:00:00Z".parse().unwrap());
+        store.upsert_records(&[codex, claude, old]).unwrap();
+
+        let summaries = store
+            .daily_tool_totals(&["2026-05-25".to_string()])
+            .unwrap();
+
+        assert_eq!(summaries.len(), 2);
+        assert_eq!(summaries[0].day, "2026-05-25");
+        assert_eq!(summaries[0].tool, "codex");
+        assert_eq!(summaries[0].total_tokens, 30);
+        assert_eq!(summaries[1].tool, "claude");
+        assert_eq!(summaries[1].total_tokens, 20);
     }
 
     fn sample_record(id: &str, input: u64) -> UsageRecord {
