@@ -16,10 +16,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --release
+      - run: scripts/package-macos-app.sh
       - run: |
           mkdir -p dist
           cp target/release/wapc dist/wapc-aarch64-apple-darwin
           tar -C dist -czf dist/wapc-aarch64-apple-darwin.tar.gz wapc-aarch64-apple-darwin
+          tar -C target/release/bundle/macos -czf dist/WAPC.app-aarch64-apple-darwin.tar.gz WAPC.app
       - uses: softprops/action-gh-release@v2
         with:
-          files: dist/wapc-aarch64-apple-darwin.tar.gz
+          files: |
+            dist/wapc-aarch64-apple-darwin.tar.gz
+            dist/WAPC.app-aarch64-apple-darwin.tar.gz

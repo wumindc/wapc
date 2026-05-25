@@ -61,6 +61,38 @@ wapc report --tool claude
 wapc report today --json
 ```
 
+## 桌面版
+
+本机打包 macOS 桌面应用：
+
+```bash
+scripts/package-macos-app.sh
+open target/release/bundle/macos/WAPC.app
+```
+
+桌面版能力：
+
+- 今日 Token 与记录数概览
+- 工具维度汇总
+- 项目维度汇总
+- 后台服务状态
+- 手动扫描与刷新
+- 隐私和数据源说明
+
+安装到 `/Applications`：
+
+```bash
+scripts/install-macos-app.sh
+open /Applications/WAPC.app
+```
+
+桌面版设计原则：
+
+- 深色侧边栏承载导航，主工作区保持浅色高可读
+- KPI、数据源、工具、项目分区明确，避免大块空白
+- 所有中文 UI 使用 macOS CJK 系统字体渲染
+- 默认只展示元数据，不暴露 prompt 或 response 正文
+
 ## 后台定时扫描
 
 安装 LaunchAgent，每 15 分钟自动执行一次 `wapc scan`：
@@ -101,6 +133,11 @@ cargo build --release
 推送 tag 会触发 GitHub Actions 构建 macOS release artifact：
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
+
+Release 会生成：
+
+- `wapc-aarch64-apple-darwin.tar.gz`
+- `WAPC.app-aarch64-apple-darwin.tar.gz`

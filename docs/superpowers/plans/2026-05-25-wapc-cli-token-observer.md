@@ -90,3 +90,20 @@
 - [x] Add `wapc report --group project`.
 - [x] Add `wapc report --json`.
 - [x] Verify service commands with the installed binary.
+
+### Task 8: Native Desktop
+
+**Files:**
+- Create: `src/desktop.rs`
+- Create: `src/bin/wapc-desktop.rs`
+- Create: `scripts/package-macos-app.sh`
+- Modify: `README.md`
+- Modify: `.github/workflows/release.yml`
+
+- [x] Add a native Rust desktop app that reuses existing scanner and SQLite store.
+- [x] Show today metrics, tool summary, project summary, service status, manual scan, and privacy/data-source details.
+- [x] Load macOS CJK system fonts so Chinese UI text renders correctly.
+- [x] Package `WAPC.app` locally.
+- [x] Include desktop app artifact in GitHub Release workflow.
+- [x] Redesign desktop UI around a modern utility-dashboard layout with sidebar navigation, KPI cards, usage mix, data-source health, and dense tables.
+- [x] Add an install script for `/Applications/WAPC.app`.
