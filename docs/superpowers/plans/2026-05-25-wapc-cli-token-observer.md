@@ -76,3 +76,17 @@
 - [x] Run real `wapc scan` into local SQLite.
 - [x] Verify `cargo install --path .` installs the binary.
 - [x] Document install and uninstall commands.
+
+### Task 7: Completion Features
+
+**Files:**
+- Create: `src/launchd.rs`
+- Modify: `src/cli.rs`
+- Modify: `src/store.rs`
+- Modify: `README.md`
+
+- [x] Add `wapc doctor` for install and source self-checks.
+- [x] Add `wapc service install|uninstall|status` for macOS LaunchAgent periodic scans.
+- [x] Add `wapc report --group project`.
+- [x] Add `wapc report --json`.
+- [x] Verify service commands with the installed binary.

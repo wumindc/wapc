@@ -5,6 +5,7 @@ use std::path::Path;
 
 use anyhow::Result;
 use rusqlite::{Connection, params};
+use serde::Serialize;
 
 use crate::model::{TokenUsage, UsageRecord};
 
@@ -12,9 +13,9 @@ pub struct UsageStore {
     conn: Connection,
 }
 
-#[derive(Clone, Debug)]
-pub struct ToolSummary {
-    pub tool: String,
+#[derive(Clone, Debug, Serialize)]
+pub struct UsageSummary {
+    pub name: String,
     pub records: u64,
     pub usage: TokenUsage,
     pub cost_usd: f64,
@@ -80,7 +81,7 @@ impl UsageStore {
         Ok(changed)
     }
 
-    pub fn summary_by_tool(&self, tool: Option<&str>) -> Result<Vec<ToolSummary>> {
+    pub fn summary_by_tool(&self, tool: Option<&str>) -> Result<Vec<UsageSummary>> {
         self.summary_by_tool_filtered(tool, None)
     }
 
@@ -88,23 +89,47 @@ impl UsageStore {
         &self,
         tool: Option<&str>,
         day_prefix: Option<&str>,
-    ) -> Result<Vec<ToolSummary>> {
+    ) -> Result<Vec<UsageSummary>> {
+        self.summary_grouped("tool", tool, day_prefix)
+    }
+
+    pub fn summary_by_project_filtered(
+        &self,
+        project: Option<&str>,
+        day_prefix: Option<&str>,
+    ) -> Result<Vec<UsageSummary>> {
+        self.summary_grouped("COALESCE(project_path, '(unknown)')", project, day_prefix)
+    }
+
+    fn summary_grouped(
+        &self,
+        group_expr: &str,
+        name_filter: Option<&str>,
+        day_prefix: Option<&str>,
+    ) -> Result<Vec<UsageSummary>> {
         let select =
-            "SELECT tool, COUNT(*), SUM(input_tokens), SUM(output_tokens), SUM(cache_read_tokens),
+            format!("SELECT {group_expr}, COUNT(*), SUM(input_tokens), SUM(output_tokens), SUM(cache_read_tokens),
             SUM(cache_write_tokens), SUM(reasoning_tokens), SUM(tool_tokens), SUM(cost_usd)
-            FROM usage_records";
-        let group = " GROUP BY tool ORDER BY total_tokens DESC";
-        let sql = match (tool, day_prefix) {
-            (Some(_), Some(_)) => format!("{select} WHERE tool = ?1 AND ts LIKE ?2{group}"),
-            (Some(_), None) => format!("{select} WHERE tool = ?1{group}"),
+            FROM usage_records");
+        let group = format!(" GROUP BY {group_expr} ORDER BY SUM(total_tokens) DESC");
+        let filter_column = if group_expr == "tool" {
+            "tool"
+        } else {
+            "project_path"
+        };
+        let sql = match (name_filter, day_prefix) {
+            (Some(_), Some(_)) => {
+                format!("{select} WHERE {filter_column} = ?1 AND ts LIKE ?2{group}")
+            }
+            (Some(_), None) => format!("{select} WHERE {filter_column} = ?1{group}"),
             (None, Some(_)) => format!("{select} WHERE ts LIKE ?1{group}"),
             (None, None) => format!("{select}{group}"),
         };
         let mut stmt = self.conn.prepare(&sql)?;
         let day_like = day_prefix.map(|day| format!("{day}%"));
-        let rows = match (tool, day_like.as_deref()) {
-            (Some(tool), Some(day)) => stmt.query_map((tool, day), row_to_summary)?,
-            (Some(tool), None) => stmt.query_map([tool], row_to_summary)?,
+        let rows = match (name_filter, day_like.as_deref()) {
+            (Some(name), Some(day)) => stmt.query_map((name, day), row_to_summary)?,
+            (Some(name), None) => stmt.query_map([name], row_to_summary)?,
             (None, Some(day)) => stmt.query_map([day], row_to_summary)?,
             (None, None) => stmt.query_map([], row_to_summary)?,
         };
@@ -143,9 +168,9 @@ impl UsageStore {
     }
 }
 
-fn row_to_summary(row: &rusqlite::Row<'_>) -> rusqlite::Result<ToolSummary> {
-    Ok(ToolSummary {
-        tool: row.get(0)?,
+fn row_to_summary(row: &rusqlite::Row<'_>) -> rusqlite::Result<UsageSummary> {
+    Ok(UsageSummary {
+        name: row.get(0)?,
         records: row.get::<_, i64>(1)? as u64,
         usage: TokenUsage {
             input: row.get::<_, Option<i64>>(2)?.unwrap_or(0) as u64,
@@ -200,10 +225,30 @@ mod tests {
 
         let summaries = store.summary_by_tool(None).unwrap();
         assert_eq!(summaries.len(), 1);
-        assert_eq!(summaries[0].tool, "claude");
+        assert_eq!(summaries[0].name, "claude");
         assert_eq!(summaries[0].records, 1);
         assert_eq!(summaries[0].usage.total(), 21);
         assert_eq!(summaries[0].cost_usd, 0.5);
+    }
+
+    #[test]
+    fn summarizes_by_project_path() {
+        let dir = tempdir().unwrap();
+        let db = dir.path().join("wapc.db");
+        let store = UsageStore::open(&db).unwrap();
+        let mut left = sample_record("left", 10);
+        left.project_path = Some("/repo-a".to_string());
+        let mut right = sample_record("right", 20);
+        right.project_path = Some("/repo-b".to_string());
+        store.upsert_records(&[left, right]).unwrap();
+
+        let summaries = store
+            .summary_by_project_filtered(Some("/repo-b"), None)
+            .unwrap();
+
+        assert_eq!(summaries.len(), 1);
+        assert_eq!(summaries[0].name, "/repo-b");
+        assert_eq!(summaries[0].usage.input, 20);
     }
 
     #[test]

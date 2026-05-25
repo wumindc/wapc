@@ -3,6 +3,7 @@
 
 pub mod cli;
 pub mod collectors;
+pub mod launchd;
 pub mod model;
 pub mod scanner;
 pub mod store;

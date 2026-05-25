@@ -53,8 +53,27 @@ ln -sf ~/.cargo/bin/wapc /opt/homebrew/bin/wapc
 
 ```bash
 wapc privacy-audit
+wapc doctor
 wapc scan
 wapc report today
+wapc report --group project
+wapc report --tool claude
+wapc report today --json
+```
+
+## 后台定时扫描
+
+安装 LaunchAgent，每 15 分钟自动执行一次 `wapc scan`：
+
+```bash
+wapc service install --binary /opt/homebrew/bin/wapc --interval-minutes 15
+wapc service status
+```
+
+卸载后台扫描：
+
+```bash
+wapc service uninstall
 ```
 
 卸载：
@@ -75,4 +94,13 @@ rm -f ~/.wapc/wapc.db
 cargo fmt --check
 cargo test
 cargo build --release
+```
+
+## 发布
+
+推送 tag 会触发 GitHub Actions 构建 macOS release artifact：
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
 ```
