@@ -201,7 +201,7 @@ mod tests {
         let workflow = std::fs::read_to_string(root.join(".github/workflows/release.yml")).unwrap();
 
         for expected in [
-            "tauri-apps/tauri-action@v1",
+            "tauri-apps/tauri-action@v0",
             "APPLE_CERTIFICATE",
             "APPLE_CERTIFICATE_PASSWORD",
             "APPLE_SIGNING_IDENTITY",
