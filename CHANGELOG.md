@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased] - 2026-06-07
+## [0.2.2] - 2026-06-07
 ### Changed
 - **MCP/Skills/Agents 页面接入真实同步下发能力**：创建通用 `SyncDialog` 组件，完整实现"选择目标工具 → plan_sync 获取 diff 预览 → apply_sync 确认写入"三步流程，替换了之前所有页面中无效的"即将上线"占位提示。
 - **MCP 页面新增"添加 MCP" 功能**：创建 `AddMcpDialog` 组件，支持 stdio/http/sse 三种传输协议配置，可手动填写命令参数后直接注入到 Claude/Cursor/Gemini 的配置文件，使用 `plan_resource_change` + `apply_sync` 真实写入。
@@ -25,7 +25,7 @@
 - **UI 全面重设计 PRD**：创建 `docs/20260607-001-WAPC-UI全面重设计PRD.md`，详细规划导航重构、响应式全局规范、MCP/Skills/Plugin/支持工具/数据导入等模块的独立需求设计，包含 4 个待审核的设计决策问题。
 - **开发规范 AGENTS.md**：创建 `AGENTS.md`，定义了前端界面的响应式、主题切换、动画规范，以及组件拆分和 `CHANGELOG` 登记规则。
 
-## [Unreleased] - 2026-06-07
+## [0.2.2] - 2026-06-07
 ### Performance
 - **get_snapshot 启动加载优化**：`get_snapshot` 命令不再在每次调用时触发全量文件扫描（`scanner::scan_home`、`scanner::source_health`、`resources::scan_inventory_with_project_roots`），改为直接从 SQLite DB 读取已持久化的缓存数据（`count_records`、`latest_source_health`、`list_resources`），窗口重开后加载时间从数秒降至毫秒级。全量扫描仍由用户主动触发的 `scan_now` 命令负责。
 - `UsageStore` 新增 `count_records()` 方法，执行 `SELECT COUNT(*)` 查询返回已索引记录总数。
