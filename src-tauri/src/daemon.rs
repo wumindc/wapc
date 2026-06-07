@@ -27,7 +27,10 @@ pub fn start_auto_scan_daemon(app: AppHandle) {
                             println!("Daemon: Triggering auto scan...");
                             match scan_now(app.clone()).await {
                                 Ok(records) => {
-                                    println!("Daemon: Auto scan finished, inserted {} records", records);
+                                    println!(
+                                        "Daemon: Auto scan finished, inserted {} records",
+                                        records
+                                    );
                                     last_scan_time = Some(std::time::Instant::now());
                                 }
                                 Err(e) => {

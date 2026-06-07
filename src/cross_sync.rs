@@ -1045,10 +1045,10 @@ fn plan_target(
                     reason: None,
                     required_env_keys: success.required_env_keys,
                     plan: Some(success.plan),
-                }
+                };
             }
             Err(TargetPlanError::Unsupported(reason)) => {
-                return target_error(target, "unsupported", reason.as_str())
+                return target_error(target, "unsupported", reason.as_str());
             }
             Err(TargetPlanError::RequiresInput(keys, reason)) => {
                 return SyncTargetPlan {
@@ -1057,7 +1057,7 @@ fn plan_target(
                     reason: Some(reason),
                     required_env_keys: keys,
                     plan: None,
-                }
+                };
             }
         }
     }

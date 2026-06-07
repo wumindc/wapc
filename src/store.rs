@@ -61,7 +61,8 @@ impl UsageStore {
         if target_path.exists() {
             std::fs::remove_file(target_path)?;
         }
-        self.conn.execute("VACUUM INTO ?1", params![target_path.to_string_lossy()])?;
+        self.conn
+            .execute("VACUUM INTO ?1", params![target_path.to_string_lossy()])?;
         Ok(())
     }
 
@@ -1325,7 +1326,9 @@ impl UsageStore {
     }
 
     pub fn get_setting(&self, key: &str) -> Result<Option<String>> {
-        let mut stmt = self.conn.prepare("SELECT setting_value FROM app_settings WHERE setting_key = ?1")?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT setting_value FROM app_settings WHERE setting_key = ?1")?;
         match stmt.query_row(params![key], |row| row.get(0)) {
             Ok(val) => Ok(Some(val)),
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),

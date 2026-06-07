@@ -18,12 +18,13 @@ use wapc::{
     },
     model::{
         AdapterCapability, ApplyChangeRequest, ApplyChangeResult, ApplySyncRequest,
-        ApplySyncResult, AutoScanConfig, BackupRequest, BackupResult, CanonicalResource, CostRecomputeResult, DeepLinkImportPreview,
-        DetectedTool, ExportReportRequest, ExportReportResult, InventoryScanResult,
-        PlanDeepLinkImportRequest, PlanSyncRequest, PlanSyncResult, PlanTemplateSyncRequest,
-        PricingRule, PrivacyAuditReport, ProjectAlias, ProjectSummary, ResourceBackup,
-        ResourceChangeLog, ResourceChangeRequest, ResourceGuide, ResourceParseFailure,
-        ResourceTemplate, SessionMeta, SourceHealth, SyncOperation, SyncPreset, WritePlan,
+        ApplySyncResult, AutoScanConfig, BackupRequest, BackupResult, CanonicalResource,
+        CostRecomputeResult, DeepLinkImportPreview, DetectedTool, ExportReportRequest,
+        ExportReportResult, InventoryScanResult, PlanDeepLinkImportRequest, PlanSyncRequest,
+        PlanSyncResult, PlanTemplateSyncRequest, PricingRule, PrivacyAuditReport, ProjectAlias,
+        ProjectSummary, ResourceBackup, ResourceChangeLog, ResourceChangeRequest, ResourceGuide,
+        ResourceParseFailure, ResourceTemplate, SessionMeta, SourceHealth, SyncOperation,
+        SyncPreset, WritePlan,
     },
     platform_paths::{
         PlatformPathContext, ToolPathVerificationRecord, WapcPaths, verify_tool_path_candidates,
@@ -299,9 +300,7 @@ pub(crate) fn get_snapshot_for_paths(home: &Path, db: &Path) -> Result<DesktopSn
         .map_err(|e| e.to_string())?;
 
     // Read source health from DB cache instead of re-scanning all source files
-    let source_health = store
-        .latest_source_health()
-        .unwrap_or_default();
+    let source_health = store.latest_source_health().unwrap_or_default();
 
     let project_summaries = store.project_summaries().map_err(|e| e.to_string())?;
     let project_roots = project_roots_from_summaries(&project_summaries);
@@ -527,7 +526,9 @@ pub async fn export_backup(request: BackupRequest) -> Result<BackupResult, Strin
     tauri::async_runtime::spawn_blocking(move || {
         let (_, db) = resolve_paths();
         let store = UsageStore::open(&db).map_err(|e| e.to_string())?;
-        store.backup_database(Path::new(&request.path)).map_err(|e| e.to_string())?;
+        store
+            .backup_database(Path::new(&request.path))
+            .map_err(|e| e.to_string())?;
         Ok(BackupResult {
             success: true,
             path: request.path,
@@ -551,9 +552,13 @@ pub async fn import_backup(request: BackupRequest) -> Result<BackupResult, Strin
         }
         let wal = db.with_extension("db-wal");
         let shm = db.with_extension("db-shm");
-        if wal.exists() { let _ = std::fs::remove_file(&wal); }
-        if shm.exists() { let _ = std::fs::remove_file(&shm); }
-        
+        if wal.exists() {
+            let _ = std::fs::remove_file(&wal);
+        }
+        if shm.exists() {
+            let _ = std::fs::remove_file(&shm);
+        }
+
         std::fs::copy(target_path, &db).map_err(|e| e.to_string())?;
         Ok(BackupResult {
             success: true,
@@ -982,19 +987,22 @@ pub fn get_trend(days: i64) -> Result<Vec<DailyToolSummary>, String> {
 pub fn get_auto_scan_config() -> Result<AutoScanConfig, String> {
     let db = db_path();
     let store = UsageStore::open(&db).map_err(|e| e.to_string())?;
-    
+
     // Default config if not set
     let default_config = AutoScanConfig {
         enabled: false,
         interval_minutes: 60,
     };
-    
-    if let Some(json) = store.get_setting("auto_scan_config").map_err(|e| e.to_string())? {
+
+    if let Some(json) = store
+        .get_setting("auto_scan_config")
+        .map_err(|e| e.to_string())?
+    {
         if let Ok(config) = serde_json::from_str::<AutoScanConfig>(&json) {
             return Ok(config);
         }
     }
-    
+
     Ok(default_config)
 }
 
@@ -1003,27 +1011,32 @@ pub fn set_auto_scan_config(config: AutoScanConfig) -> Result<(), String> {
     let db = db_path();
     let store = UsageStore::open(&db).map_err(|e| e.to_string())?;
     let json = serde_json::to_string(&config).map_err(|e| e.to_string())?;
-    store.set_setting("auto_scan_config", &json).map_err(|e| e.to_string())?;
+    store
+        .set_setting("auto_scan_config", &json)
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn check_update(app: tauri::AppHandle) -> Result<Option<crate::updater::UpdateAvailablePayload>, String> {
+pub async fn check_update(
+    app: tauri::AppHandle,
+) -> Result<Option<crate::updater::UpdateAvailablePayload>, String> {
     let conf = app.config().plugins.0.get("updater").cloned();
-    let pubkey = conf.as_ref()
+    let pubkey = conf
+        .as_ref()
         .and_then(|v| v.get("pubkey"))
         .and_then(|v| v.as_str())
         .unwrap_or_default();
-    
+
     if pubkey.starts_with("PLACEHOLDER") || pubkey.is_empty() {
         return Ok(None);
     }
-    
+
     let updater = match tauri_plugin_updater::UpdaterExt::updater(&app) {
         Ok(u) => u,
         Err(e) => return Err(e.to_string()),
     };
-    
+
     let update = updater.check().await.map_err(|e| e.to_string())?;
     Ok(update.map(|u| crate::updater::UpdateAvailablePayload {
         version: u.version.clone(),
