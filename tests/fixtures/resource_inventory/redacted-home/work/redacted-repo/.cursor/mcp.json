@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "repo-db": {
+      "command": "node",
+      "args": ["repo-db-server.js"],
+      "env": {
+        "DATABASE_TOKEN": "__WAPC_REDACTED_FIXTURE_TOKEN__"
+      }
+    }
+  }
+}

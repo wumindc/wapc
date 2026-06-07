@@ -1,17 +1,24 @@
+[workspace]
+members = [".", "src-tauri"]
+resolver = "2"
+
 [package]
 name = "wapc"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
+
+[lib]
+name = "wapc"
 
 [dependencies]
 anyhow = "1.0.102"
 chrono = { version = "0.4.44", features = ["serde"] }
-clap = { version = "4.6.1", features = ["derive"] }
 dirs-next = "2.0.0"
-eframe = { version = "0.34.2", default-features = false, features = ["default_fonts", "glow"] }
 rusqlite = { version = "0.39.0", features = ["bundled"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
+sha2 = "0.10.9"
+toml = "0.8.2"
 walkdir = "2.5.0"
 
 [dev-dependencies]

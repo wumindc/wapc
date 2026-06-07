@@ -1,0 +1,9 @@
+---
+description: "Fixture Cursor rule description"
+globs: ["ui/**/*.tsx", "ui/**/*.ts"]
+alwaysApply: false
+---
+
+# React Rules
+
+Never store this checked-in Cursor rule body.

@@ -4,14 +4,91 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  test:
-    runs-on: macos-latest
+  cross-platform-smoke:
+    name: Cross-platform core smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: ui/yarn.lock
+
       - uses: dtolnay/rust-toolchain@stable
+
       - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --check
-      - run: cargo clippy --all-targets -- -D warnings
-      - run: cargo test
-      - run: cargo build --release
+
+      - name: Install UI dependencies
+        run: yarn --cwd ui install --frozen-lockfile
+
+      - name: Lint Rust core
+        run: cargo clippy --workspace --exclude wapc-app --all-targets -- -D warnings
+
+      - name: Test Rust core
+        run: cargo test --workspace --exclude wapc-app
+
+      - name: Lint UI
+        run: yarn --cwd ui lint
+
+      - name: Test UI
+        run: yarn --cwd ui test
+
+      - name: Build UI
+        run: yarn --cwd ui build
+
+  desktop:
+    name: macOS desktop gates
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: ui/yarn.lock
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install UI dependencies
+        run: yarn --cwd ui install --frozen-lockfile
+
+      - name: Check Rust formatting
+        run: cargo fmt --check
+
+      - name: Lint Rust workspace
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test Rust workspace
+        run: cargo test --workspace
+
+      - name: Lint UI
+        run: yarn --cwd ui lint
+
+      - name: Test UI
+        run: yarn --cwd ui test
+
+      - name: Build UI
+        run: yarn --cwd ui build
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --locked
+
+      - name: Build unsigned macOS app
+        run: |
+          cd src-tauri
+          cargo tauri build

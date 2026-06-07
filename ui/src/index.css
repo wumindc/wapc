@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ────────────────────────────────────────────────────────── */
+@theme {
+  /* Brand colors */
+  --color-brand-blue: #1F6FEB;
+  --color-brand-teal: #12A0A6;
+  --color-brand-purple: #7E57EB;
+  --color-brand-orange: #F1761F;
+  --color-brand-green: #26975B;
+  --color-brand-red: #CC463A;
+
+  /* Theme-aware variables mapped to CSS vars */
+  --color-surface: var(--color-surface);
+  --color-surface-soft: var(--color-surface-soft);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-page: var(--color-page);
+  --color-sidebar-bg: var(--color-sidebar-bg);
+  --color-sidebar-active: var(--color-sidebar-active);
+  --color-border: var(--color-border);
+  --color-border-soft: var(--color-border-soft);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-muted);
+  --color-heading: var(--color-heading);
+
+  /* Tool badge colors */
+  --color-tool-claude: #CC785C;
+  --color-tool-codex: #1F6FEB;
+  --color-tool-gemini: #7E57EB;
+  --color-tool-opencode: #F1761F;
+  --color-tool-other: #4B5563;
+}
+
+:root {
+  /* Light mode colors */
+  --color-surface: #ffffff;
+  --color-surface-soft: #f8fafc;
+  --color-surface-hover: #f1f5f9;
+  --color-page: #f1f5f9;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-active: #e2e8f0;
+  --color-border: #e2e8f0;
+  --color-border-soft: #e2e8f0;
+  --color-text: #334155;
+  --color-muted: #64748b;
+  --color-heading: #0f172a;
+
+  /* Font */
+  --font-sans: 'Inter', ui-sans-serif, -apple-system, 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadow */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-card-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+}
+
+.dark {
+  /* Dark mode colors */
+  --color-surface: #0f172a; /* slate-900 */
+  --color-surface-soft: #1e293b; /* slate-800 */
+  --color-surface-hover: #1e293b; /* slate-800 */
+  --color-page: #020617; /* slate-950 */
+  --color-sidebar-bg: #0f172a; /* slate-900 */
+  --color-sidebar-active: #0891b2; /* cyan-600 */
+  --color-border: #1e293b; /* slate-800 */
+  --color-border-soft: #1e293b; /* slate-800 */
+  --color-text: #cbd5e1; /* slate-300 */
+  --color-muted: #64748b; /* slate-500 */
+  --color-heading: #f8fafc; /* slate-50 */
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    background-color: var(--color-page);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* macOS title bar drag region */
+  [data-tauri-drag-region] {
+    -webkit-app-region: drag;
+  }
+
+  /* Custom Scrollbar for prototype */
+  .custom-scrollbar::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+  }
+  .custom-scrollbar::-webkit-scrollbar-track { 
+    background: transparent; 
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb { 
+    background: var(--color-muted); 
+    border-radius: 3px; 
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { 
+    background: var(--color-text); 
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-muted);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text);
+  }
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+  }
+
+  .transition-base {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .fade-in { 
+    animation: fadeIn 0.3s ease-in-out; 
+  }
+  
+  @keyframes fadeIn { 
+    from { 
+      opacity: 0; 
+      transform: translateY(5px); 
+    } 
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    } 
+  }
+}

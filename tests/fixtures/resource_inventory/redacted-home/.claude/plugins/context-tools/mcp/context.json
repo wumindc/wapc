@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "context": {
+      "command": "node",
+      "args": ["context-server.js"],
+      "env": {
+        "CONTEXT_TOKEN": "__WAPC_REDACTED_FIXTURE_TOKEN__"
+      }
+    }
+  }
+}

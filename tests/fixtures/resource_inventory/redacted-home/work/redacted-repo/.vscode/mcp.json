@@ -1,0 +1,20 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "context7-key",
+      "description": "Context7 access key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:context7-key}",
+        "Accept": "application/json"
+      }
+    }
+  }
+}

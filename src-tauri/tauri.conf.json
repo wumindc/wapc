@@ -1,0 +1,71 @@
+{
+  "productName": "WAPC",
+  "version": "0.2.2",
+  "identifier": "com.wapc.desktop",
+  "build": {
+    "frontendDist": "../ui/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "yarn --cwd ui dev",
+    "beforeBuildCommand": "yarn --cwd ui build"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "url": "/",
+        "create": true,
+        "title": "WAPC",
+        "width": 1180,
+        "height": 780,
+        "minWidth": 980,
+        "minHeight": 640,
+        "visible": true,
+        "focus": true,
+        "decorations": true,
+        "transparent": false,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
+      }
+    ],
+    "macOSPrivateApi": true,
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["wapc"]
+      }
+    },
+    "updater": {
+      "pubkey": "PLACEHOLDER_REPLACE_WITH_REAL_PUBKEY_AFTER_RUNNING_cargo_tauri_signer_generate",
+      "endpoints": [
+        "https://github.com/wumindc/wapc/releases/latest/download/latest.json"
+      ]
+    },
+    "shell": {
+      "open": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "app"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null,
+      "minimumSystemVersion": "12.0"
+    }
+  }
+}
