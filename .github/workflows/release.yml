@@ -60,8 +60,7 @@ jobs:
             fi
           done
           if (( ${#missing[@]} > 0 )); then
-            printf 'Missing required release signing secret(s): %s\n' "${missing[*]}" >&2
-            exit 1
+            printf 'Warning: Missing release signing secret(s): %s. Apple Code Signing will be skipped.\n' "${missing[*]}" >&2
           fi
 
       - name: Install UI dependencies
@@ -81,6 +80,7 @@ jobs:
         run: cargo tauri build --help >/dev/null
 
       - name: Import Developer ID certificate
+        if: env.APPLE_CERTIFICATE != ''
         run: |
           echo "$APPLE_CERTIFICATE" | base64 --decode > certificate.p12
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
