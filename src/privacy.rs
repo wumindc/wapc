@@ -599,7 +599,7 @@ mod tests {
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path.ends_with(".claude/projects") && !source.writes_source)
+                .any(|source| source.path.replace("\\", "/").ends_with(".claude/projects") && !source.writes_source)
         );
         assert!(
             report
@@ -629,31 +629,31 @@ mod tests {
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path.ends_with(".codex/config.toml") && !source.reads_body)
+                .any(|source| source.path.replace("\\", "/").ends_with(".codex/config.toml") && !source.reads_body)
         );
         assert!(
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path.ends_with(".claude/skills") && !source.reads_body)
+                .any(|source| source.path.replace("\\", "/").ends_with(".claude/skills") && !source.reads_body)
         );
         assert!(
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path.ends_with(".codex/AGENTS.md") && !source.reads_body)
+                .any(|source| source.path.replace("\\", "/").ends_with(".codex/AGENTS.md") && !source.reads_body)
         );
         assert!(
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path.ends_with(".claude/plugins") && !source.reads_body)
+                .any(|source| source.path.replace("\\", "/").ends_with(".claude/plugins") && !source.reads_body)
         );
         assert!(
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path.ends_with(".claude/agents") && !source.reads_body)
+                .any(|source| source.path.replace("\\", "/").ends_with(".claude/agents") && !source.reads_body)
         );
         assert!(report.forbidden_fields.contains(&"prompt".to_string()));
         assert!(report.forbidden_fields.contains(&"api_key".to_string()));
@@ -740,19 +740,19 @@ mod tests {
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path == "<project>/AGENTS.md" && !source.reads_body)
+                .any(|source| source.path.replace('\\', "/") == "<project>/AGENTS.md" && !source.reads_body)
         );
         assert!(
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path == "<project>/.cursor/mcp.json" && !source.writes_source)
+                .any(|source| source.path.replace('\\', "/") == "<project>/.cursor/mcp.json" && !source.writes_source)
         );
         assert!(
             report
                 .read_sources
                 .iter()
-                .any(|source| source.path == "<project>/.claude/agents" && !source.reads_body)
+                .any(|source| source.path.replace('\\', "/") == "<project>/.claude/agents" && !source.reads_body)
         );
     }
 
@@ -786,7 +786,7 @@ mod tests {
         assert!(!windows_codex.writes_source);
         assert!(
             linux_gemini
-                .path
+                .path.replace('\\', "/")
                 .contains("/home/example user/.gemini/settings.json")
         );
         assert!(linux_gemini.purpose.contains("read-only candidate"));
@@ -854,7 +854,7 @@ mod tests {
         let report = privacy_audit(home.path(), &db);
 
         assert!(report.read_sources.iter().any(|source| {
-            source.path.ends_with(".wapc/backups")
+            source.path.replace("\\", "/").ends_with(".wapc/backups")
                 && source.purpose.contains("rollback")
                 && source.reads_body
                 && !source.writes_source
@@ -920,12 +920,12 @@ mod tests {
         let report = privacy_audit(home.path(), &db);
 
         assert!(report.read_sources.iter().any(|source| {
-            source.path.ends_with(".codex/config.toml")
+            source.path.replace("\\", "/").ends_with(".codex/config.toml")
                 && source.writes_source
                 && source.purpose.contains("cross-tool sync target write")
         }));
         assert!(report.read_sources.iter().any(|source| {
-            source.path.ends_with(".cursor/mcp.json")
+            source.path.replace("\\", "/").ends_with(".cursor/mcp.json")
                 && source.writes_source
                 && source.purpose.contains("cross-tool sync target write")
         }));

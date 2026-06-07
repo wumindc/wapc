@@ -427,6 +427,7 @@ mod tests {
                 .unwrap()
                 .is_empty()
         );
+        drop(store);
         fs::remove_dir_all(&dir).unwrap();
     }
 
