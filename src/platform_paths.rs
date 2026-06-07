@@ -125,23 +125,41 @@ impl PlatformPathContext {
         project_root: Option<PathBuf>,
     ) -> Self {
         let home_dir = home_dir.as_ref().to_path_buf();
+        let is_real_home = dirs_next::home_dir().is_some_and(|h| h == home_dir);
+        
         match std::env::consts::OS {
             "windows" => {
-                let app_data = std::env::var_os("APPDATA")
-                    .map(PathBuf::from)
-                    .unwrap_or_else(|| home_dir.join("AppData/Roaming"));
-                let local_app_data = std::env::var_os("LOCALAPPDATA")
-                    .map(PathBuf::from)
-                    .unwrap_or_else(|| home_dir.join("AppData/Local"));
+                let app_data = if is_real_home {
+                    std::env::var_os("APPDATA").map(PathBuf::from)
+                } else {
+                    None
+                }
+                .unwrap_or_else(|| home_dir.join("AppData/Roaming"));
+                
+                let local_app_data = if is_real_home {
+                    std::env::var_os("LOCALAPPDATA").map(PathBuf::from)
+                } else {
+                    None
+                }
+                .unwrap_or_else(|| home_dir.join("AppData/Local"));
+                
                 Self::windows(home_dir, app_data, local_app_data, project_root)
             }
             "linux" => {
-                let config = std::env::var_os("XDG_CONFIG_HOME")
-                    .map(PathBuf::from)
-                    .unwrap_or_else(|| home_dir.join(".config"));
-                let data = std::env::var_os("XDG_DATA_HOME")
-                    .map(PathBuf::from)
-                    .unwrap_or_else(|| home_dir.join(".local/share"));
+                let config = if is_real_home {
+                    std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from)
+                } else {
+                    None
+                }
+                .unwrap_or_else(|| home_dir.join(".config"));
+                
+                let data = if is_real_home {
+                    std::env::var_os("XDG_DATA_HOME").map(PathBuf::from)
+                } else {
+                    None
+                }
+                .unwrap_or_else(|| home_dir.join(".local/share"));
+                
                 Self::linux(home_dir, config, data, project_root)
             }
             _ => Self::macos(home_dir, project_root),

@@ -485,7 +485,7 @@ fn plan_id(
 
 fn change_id(plan: &WritePlan, now: &str) -> String {
     format!(
-        "chg:{}",
+        "chg-{}",
         sha256_8(&format!(
             "{}\n{}\n{}\n{}\n{}",
             plan.plan_id, plan.target_path, plan.before_fingerprint, plan.after_fingerprint, now
@@ -493,12 +493,12 @@ fn change_id(plan: &WritePlan, now: &str) -> String {
     )
 }
 
-fn rollback_change_id(change: &ResourceChangeLog, now: &str) -> String {
+fn rollback_change_id(original: &ResourceChangeLog, now: &str) -> String {
     format!(
-        "chg:{}",
+        "chg-{}",
         sha256_8(&format!(
             "rollback\n{}\n{}\n{}\n{}",
-            change.change_id, change.target_path, change.status, now
+            original.change_id, original.target_path, original.status, now
         ))
     )
 }
