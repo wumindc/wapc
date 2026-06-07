@@ -40,7 +40,7 @@
       }
     },
     "updater": {
-      "pubkey": "PLACEHOLDER_REPLACE_WITH_REAL_PUBKEY_AFTER_RUNNING_cargo_tauri_signer_generate",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM4N0RFRTUzNzZEODg1RjAKUldUd2hkaDJVKzU5T0lmRHNheWU0aXlBNkpBTHRua1BJMWF4Vm5aR0p1cE1wTm9JeEZ5N3p0S2EK",
       "endpoints": [
         "https://github.com/wumindc/wapc/releases/latest/download/latest.json"
       ]
