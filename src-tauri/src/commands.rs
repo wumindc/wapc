@@ -994,6 +994,7 @@ pub fn get_auto_scan_config() -> Result<AutoScanConfig, String> {
         interval_minutes: 60,
     };
 
+    #[allow(clippy::collapsible_if)]
     if let Some(json) = store
         .get_setting("auto_scan_config")
         .map_err(|e| e.to_string())?

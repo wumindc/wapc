@@ -101,7 +101,7 @@ pub async fn download_and_install(app: AppHandle) -> Result<(), String> {
             move |downloaded, total| {
                 let downloaded_u64 = downloaded as u64;
                 let percent = total
-                    .map(|t| if t > 0 { (downloaded_u64 * 100) / t } else { 0 })
+                    .and_then(|t| (downloaded_u64 * 100).checked_div(t))
                     .unwrap_or(0);
                 let _ = app_clone.emit(
                     "update-progress",

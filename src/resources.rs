@@ -1922,8 +1922,8 @@ env = { GITHUB_TOKEN = "ghp_secret123" }
             .expect("VS Code workspace MCP server should be scanned");
         assert_eq!(resource.scope, "project");
         assert_eq!(
-            normalize_path(&resource.origin_path),
-            normalize_path(&project.join(".vscode").join("mcp.json"))
+            normalize_path(resource.origin_path.clone()),
+            normalize_path(project.join(".vscode").join("mcp.json"))
         );
         assert_eq!(resource.origin_locator.as_deref(), Some("servers.context7"));
         assert_eq!(resource.enabled_in, vec!["vscode".to_string()]);
@@ -2704,8 +2704,8 @@ Never store this subagent instruction body.
         assert_eq!(instruction.scope, "project");
         assert_eq!(instruction.enabled_in, vec!["vscode".to_string()]);
         assert_eq!(
-            normalize_path(&instruction.origin_path),
-            normalize_path(&project.join(".github").join("copilot-instructions.md"))
+            normalize_path(instruction.origin_path.clone()),
+            normalize_path(project.join(".github").join("copilot-instructions.md"))
         );
         assert!(instruction.payload_json.contains("Copilot Rules"));
         assert!(instruction.payload_json.contains("paragraph_hashes"));
