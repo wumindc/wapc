@@ -1710,6 +1710,19 @@ fn merge_resource(
 
 #[cfg(test)]
 mod tests {
+
+    fn opencode_config_dir(home: &std::path::Path) -> std::path::PathBuf {
+        let ctx = crate::platform_paths::PlatformPathContext::current_home_compatible(home);
+        match ctx.platform {
+            crate::platform_paths::PlatformKind::Macos => home.join(".config/opencode"),
+            _ => ctx.config_dir.join("opencode"),
+        }
+    }
+
+    fn normalize_path(p: impl AsRef<std::path::Path>) -> String {
+        p.as_ref().display().to_string().replace('\\', "/")
+    }
+
     use std::{fs, path::PathBuf};
 
     use tempfile::tempdir;
@@ -1909,8 +1922,8 @@ env = { GITHUB_TOKEN = "ghp_secret123" }
             .expect("VS Code workspace MCP server should be scanned");
         assert_eq!(resource.scope, "project");
         assert_eq!(
-            resource.origin_path,
-            project.join(".vscode/mcp.json").display().to_string()
+            normalize_path(&resource.origin_path),
+            normalize_path(&project.join(".vscode").join("mcp.json"))
         );
         assert_eq!(resource.origin_locator.as_deref(), Some("servers.context7"));
         assert_eq!(resource.enabled_in, vec!["vscode".to_string()]);
@@ -1923,9 +1936,9 @@ env = { GITHUB_TOKEN = "ghp_secret123" }
     #[test]
     fn scans_opencode_mcp_from_user_and_project_config_without_secret_values() {
         let home = tempdir().unwrap();
-        fs::create_dir_all(home.path().join(".config/opencode")).unwrap();
+        fs::create_dir_all(opencode_config_dir(home.path())).unwrap();
         fs::write(
-            home.path().join(".config/opencode/opencode.json"),
+            opencode_config_dir(home.path()).join("opencode.json"),
             serde_json::json!({
                 "$schema": "https://opencode.ai/config.json",
                 "mcp": {
@@ -2019,9 +2032,9 @@ env = { GITHUB_TOKEN = "ghp_secret123" }
     #[test]
     fn scans_opencode_disabled_mcp_without_marking_it_enabled() {
         let home = tempdir().unwrap();
-        fs::create_dir_all(home.path().join(".config/opencode")).unwrap();
+        fs::create_dir_all(opencode_config_dir(home.path())).unwrap();
         fs::write(
-            home.path().join(".config/opencode/opencode.json"),
+            opencode_config_dir(home.path()).join("opencode.json"),
             serde_json::json!({
                 "$schema": "https://opencode.ai/config.json",
                 "mcp": {
@@ -2230,7 +2243,7 @@ env = { GITHUB_TOKEN = "ghp_secret123" }
     #[test]
     fn scans_opencode_skills_from_user_and_project_roots_without_body_text() {
         let home = tempdir().unwrap();
-        let user_skill = home.path().join(".config/opencode/skills/git-release");
+        let user_skill = opencode_config_dir(home.path()).join("skills/git-release");
         fs::create_dir_all(&user_skill).unwrap();
         fs::write(
             user_skill.join("SKILL.md"),
@@ -2691,11 +2704,8 @@ Never store this subagent instruction body.
         assert_eq!(instruction.scope, "project");
         assert_eq!(instruction.enabled_in, vec!["vscode".to_string()]);
         assert_eq!(
-            instruction.origin_path,
-            project
-                .join(".github/copilot-instructions.md")
-                .display()
-                .to_string()
+            normalize_path(&instruction.origin_path),
+            normalize_path(&project.join(".github").join("copilot-instructions.md"))
         );
         assert!(instruction.payload_json.contains("Copilot Rules"));
         assert!(instruction.payload_json.contains("paragraph_hashes"));
